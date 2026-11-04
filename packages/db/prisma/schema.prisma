@@ -1,0 +1,145 @@
+// Fineko Calendar — окремий мікросервіс запису (календар для експертів, салонів тощо).
+// Мультитенантний з першого дня: Tenant = компанія; у ній багато ресурсів (майстри/експерти), послуг і користувачів SSO.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Компанія. apiKey — єдиний секрет для воронок/ботів/MCP (Bearer), per-tenant.
+model Tenant {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  apiKey        String   @unique
+  timezone      String   @default("Europe/Kyiv")
+  /// Не пропонувати слоти ближче ніж через стільки хвилин від зараз.
+  minNoticeMin  Int      @default(120)
+  /// На скільки днів уперед бот може пропонувати запис.
+  horizonDays   Int      @default(30)
+  createdAt     DateTime @default(now())
+
+  resources Resource[]
+  services  Service[]
+  windows   AvailabilityWindow[]
+  timeOffs  TimeOff[]
+  bookings  Booking[]
+
+  @@map("tenants")
+}
+
+/// Той, до кого записують: експерт, майстер, кабінет. ssoUserId — зв'язок із користувачем SSO (щоб майстер бачив свій стовпчик).
+model Resource {
+  id        String  @id @default(cuid())
+  tenantId  String
+  name      String
+  color     String  @default("#0ea5e9")
+  active    Boolean @default(true)
+  sortOrder Int     @default(0)
+  ssoUserId String?
+  tenant    Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  windows  AvailabilityWindow[]
+  timeOffs TimeOff[]
+  bookings Booking[]
+  services ServiceResource[]
+
+  @@index([tenantId])
+  @@map("resources")
+}
+
+/// Послуга: тривалість, пауза після, крок слотів. Якщо до послуги не прив'язано ресурсів — її виконують усі.
+model Service {
+  id          String  @id @default(cuid())
+  tenantId    String
+  name        String
+  durationMin Int     @default(60)
+  bufferMin   Int     @default(0)
+  /// Крок початку слотів у хвилинах; порожньо = тривалість + пауза.
+  stepMin     Int?
+  price       Int?
+  active      Boolean @default(true)
+  sortOrder   Int     @default(0)
+  tenant      Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  resources ServiceResource[]
+  bookings  Booking[]
+
+  @@index([tenantId])
+  @@map("services")
+}
+
+model ServiceResource {
+  serviceId  String
+  resourceId String
+  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@id([serviceId, resourceId])
+  @@map("service_resources")
+}
+
+/// «Вільні віконечка»: тижневий графік, коли ресурс приймає записи. weekday 1=Пн … 7=Нд; час у хвилинах від півночі за часовим поясом компанії.
+model AvailabilityWindow {
+  id         String   @id @default(cuid())
+  tenantId   String
+  resourceId String
+  weekday    Int
+  startMin   Int
+  endMin     Int
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, resourceId])
+  @@map("availability_windows")
+}
+
+/// Разове закриття: відпустка, лікар, перерва. resourceId порожній = для всієї компанії.
+model TimeOff {
+  id         String    @id @default(cuid())
+  tenantId   String
+  resourceId String?
+  startAt    DateTime
+  endAt      DateTime
+  reason     String    @default("")
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  resource   Resource? @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, startAt])
+  @@map("time_offs")
+}
+
+/// Запис клієнта. status: confirmed | cancelled | completed | no_show.
+model Booking {
+  id             String    @id @default(cuid())
+  tenantId       String
+  resourceId     String
+  serviceId      String?
+  startAt        DateTime
+  endAt          DateTime
+  bufferMin      Int       @default(0)
+  status         String    @default("confirmed")
+  clientName     String    @default("")
+  clientPhone    String    @default("")
+  clientTelegram String    @default("")
+  /// Telegram id клієнта в боті, щоб знайти його запис і надіслати нагадування.
+  clientTelegramId String  @default("")
+  /// Звідки запис: slug воронки / "admin".
+  source         String    @default("admin")
+  note           String    @default("")
+  createdBy      String    @default("")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  cancelledAt    DateTime?
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  resource       Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  service        Service?  @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, startAt])
+  @@index([resourceId, startAt])
+  @@index([tenantId, clientTelegramId])
+  @@map("bookings")
+}

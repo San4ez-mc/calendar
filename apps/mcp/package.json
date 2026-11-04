@@ -1,0 +1,10 @@
+{
+  "name": "@cal/mcp",
+  "version": "0.1.0",
+  "main": "src/tools.js",
+  "dependencies": {
+    "@cal/core": "*",
+    "@cal/db": "*",
+    "@cal/errors": "*"
+  }
+}

@@ -1,0 +1,31 @@
+// Вхід лише через FINEKO SSO (єдина кнопка), як в інших продуктах екосистеми.
+const SSO_MESSAGES = {
+  denied: 'Цей акаунт не має доступу до Календаря. Зверніться до адміністратора.',
+  state: 'Сесія входу застаріла. Спробуйте ще раз.',
+  exchange: 'Не вдалося завершити вхід через SSO. Спробуйте ще раз.',
+  error: 'Помилка входу через SSO. Спробуйте ще раз.',
+};
+
+export default function Login() {
+  const ssoError = new URLSearchParams(window.location.search).get('sso');
+  const here = window.location.pathname + window.location.search;
+  const href = window.location.pathname.startsWith('/login') ? '/auth/sso/login' : `/auth/sso/login?next=${encodeURIComponent(here)}`;
+  const bg = { background: "linear-gradient(rgba(2,6,23,.55), rgba(2,6,23,.88)), url('/login-bg.jpg') center/cover fixed, #020617" };
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4" style={bg}>
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-brand rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl"><span className="text-3xl">📅</span></div>
+          <h1 className="text-2xl font-bold text-white">Fineko Календар</h1>
+          <p className="text-slate-300 mt-1">Єдиний вхід у продукти FINEKO</p>
+        </div>
+        <div className="bg-slate-900/80 backdrop-blur rounded-2xl p-6 border border-white/10 shadow-2xl space-y-4">
+          {ssoError && SSO_MESSAGES[ssoError] && (
+            <div className="bg-red-900/30 border border-red-700 rounded-lg px-3 py-2 text-red-300 text-sm">{SSO_MESSAGES[ssoError]}</div>
+          )}
+          <a href={href} className="w-full flex items-center justify-center gap-2 bg-brand hover:bg-brand-dark text-white rounded-lg py-3 font-medium transition-colors">Увійти через FINEKO</a>
+        </div>
+      </div>
+    </div>
+  );
+}

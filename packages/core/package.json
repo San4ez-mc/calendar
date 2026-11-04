@@ -1,0 +1,6 @@
+{
+  "name": "@cal/core",
+  "version": "0.1.0",
+  "main": "src/index.js",
+  "dependencies": { "@cal/db": "*", "@cal/errors": "*" }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "fineko-calendar",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["apps/*", "packages/*"],
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "dev:api": "npm run dev -w @cal/api",
+    "dev:admin": "npm run dev -w @cal/admin",
+    "build:admin": "npm run build -w @cal/admin",
+    "db:generate": "npm run generate -w @cal/db",
+    "db:push": "npm run push -w @cal/db",
+    "db:seed": "npm run seed -w @cal/db",
+    "test": "node --test packages/core/test"
+  }
+}
