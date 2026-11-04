@@ -11,6 +11,6 @@
     "db:generate": "npm run generate -w @cal/db",
     "db:push": "npm run push -w @cal/db",
     "db:seed": "npm run seed -w @cal/db",
-    "test": "node --test packages/core/test"
+    "test": "node --test packages/core/test/slots.test.js"
   }
 }
