@@ -10,9 +10,9 @@ export default function Login() {
   const ssoError = new URLSearchParams(window.location.search).get('sso');
   const here = window.location.pathname + window.location.search;
   const href = window.location.pathname.startsWith('/login') ? '/auth/sso/login' : `/auth/sso/login?next=${encodeURIComponent(here)}`;
-  const bg = { background: "linear-gradient(rgba(2,6,23,.55), rgba(2,6,23,.88)), url('/login-bg.jpg') center/cover fixed, #020617" };
+  const bg = { background: "linear-gradient(rgba(2,6,23,.12), rgba(2,6,23,.35)), url('/login-bg.jpg') left center/cover no-repeat fixed, #0b1220" };
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={bg}>
+    <div className="min-h-screen flex items-center justify-center lg:justify-end lg:pr-[8vw] p-4" style={bg}>
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-brand rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl"><span className="text-3xl">📅</span></div>
