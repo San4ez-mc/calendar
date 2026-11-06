@@ -17,6 +17,7 @@ const mcpRouter = require('./routes/mcp');
 const tenantsAdminRouter = require('./routes/tenants-admin');
 const catalogRouter = require('./routes/catalog');
 const scheduleRouter = require('./routes/schedule');
+const publicRouter = require('./routes/public');
 
 const app = express();
 const PORT = Number(process.env.PORT || 4800);
@@ -38,6 +39,7 @@ app.get('/health', asyncHandler(async (req, res) => {
 }));
 
 app.use(authSsoRouter);
+app.use('/api/public', publicRouter);
 app.use('/api', mcpRouter);
 app.use('/api', tenantsAdminRouter);
 app.use('/api', resolveTenant, catalogRouter, scheduleRouter);

@@ -8,6 +8,7 @@ import CalendarPage from './pages/CalendarPage';
 import TeamPage from './pages/TeamPage';
 import ServicesPage from './pages/ServicesPage';
 import SettingsPage from './pages/SettingsPage';
+import BookPage from './pages/BookPage';
 
 function ProtectedShell({ children }) {
   const { isLoading, isAuthenticated, tenants } = useAuthStore();
@@ -18,6 +19,8 @@ function ProtectedShell({ children }) {
 }
 
 export default function App() {
+  // Публічна сторінка запису для клієнтів — без входу.
+  if (window.location.pathname.startsWith('/book/')) return <BookPage />;
   const fetchMe = useAuthStore((s) => s.fetchMe);
   useEffect(() => { fetchMe(); }, [fetchMe]);
   return (
