@@ -23,10 +23,13 @@ const app = express();
 const PORT = Number(process.env.PORT || 4800);
 app.set('trust proxy', 1);
 
-app.use(helmet({
-  contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], scriptSrc: ["'self'"], styleSrc: ["'self'", "'unsafe-inline'"], imgSrc: ["'self'", 'data:'], connectSrc: ["'self'"], frameAncestors: ["'none'"], objectSrc: ["'none'"] } },
-  crossOriginResourcePolicy: false,
-}));
+// Усе, крім сторінки запису, не можна вбудовувати в чужі сторінки (frame-ancestors 'none').
+// Публічну сторінку /book/* можна вбудувати в iframe лише на *.fineko.space і доменах з CAL_EMBED_ORIGINS (через кому, напр. https://my-site.com).
+const baseCsp = { defaultSrc: ["'self'"], scriptSrc: ["'self'"], styleSrc: ["'self'", "'unsafe-inline'"], imgSrc: ["'self'", 'data:'], connectSrc: ["'self'"], objectSrc: ["'none'"] };
+const embedOrigins = ["'self'", 'https://*.fineko.space', ...String(process.env.CAL_EMBED_ORIGINS || '').split(',').map((x) => x.trim()).filter(Boolean)];
+const helmetDefault = helmet({ contentSecurityPolicy: { directives: { ...baseCsp, frameAncestors: ["'none'"] } }, crossOriginResourcePolicy: false });
+const helmetEmbeddable = helmet({ contentSecurityPolicy: { directives: { ...baseCsp, frameAncestors: embedOrigins } }, frameguard: false, crossOriginResourcePolicy: false });
+app.use((req, res, next) => (req.method === 'GET' && (req.path === '/book' || req.path.startsWith('/book/')) ? helmetEmbeddable : helmetDefault)(req, res, next));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 // Воронки звертаються server-to-server (без cookie); адмінка — той самий origin. Cookie-запити з чужих origin відхиляємо.

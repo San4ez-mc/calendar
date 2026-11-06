@@ -60,7 +60,8 @@ export default function BookPage() {
     } finally { setBusy(false); }
   }
 
-  const bg = { background: "linear-gradient(rgba(2,6,23,.25), rgba(2,6,23,.55)), url('/login-bg.jpg') left center/cover no-repeat fixed, #0b1220" };
+  const embed = q.get('embed') === '1';
+  const bg = embed ? { background: 'transparent' } : { background: "linear-gradient(rgba(2,6,23,.25), rgba(2,6,23,.55)), url('/login-bg.jpg') left center/cover no-repeat fixed, #0b1220" };
   return (
     <div className="min-h-screen flex items-start justify-center p-4 sm:p-8" style={bg}>
       <div className="w-full max-w-xl">
