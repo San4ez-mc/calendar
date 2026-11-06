@@ -1,7 +1,7 @@
 # Fineko Calendar — перший деплой на VPS (calendar.fineko.space)
 
 > Сервер `root@173.242.62.180`. Усе нижче робиться ОДИН раз; далі лише `bash deploy.sh` на сервері.
-> Порт сервісу **4800** (локально й на проді). База `fineko_calendar` у спільному Postgres.
+> Порт сервісу **4850** (локально й на проді). База `fineko_calendar` у спільному Postgres.
 
 ## 0. Що потрібно від власника
 1. **DNS:** A-запис `calendar.fineko.space` → `173.242.62.180`.
@@ -18,7 +18,7 @@ cp .env.example .env                                                  # і за�
 ```
 `.env` на проді:
 ```
-PORT=4800
+PORT=4850
 NODE_ENV=production
 DATABASE_URL=postgresql://<user>:<pass>@127.0.0.1:5432/fineko_calendar
 SSO_URL=https://sso.fineko.space
@@ -42,7 +42,7 @@ certbot --nginx -d calendar.fineko.space      # коли DNS уже резолв
 ## 3. SSO
 1. Зареєструвати OAuth-клієнта (на проді, ключ `ADMIN_API_KEY` з `.env` SSO):
    `POST https://sso.fineko.space/admin/clients` `x-admin-key: …` тіло `{"name":"calendar","redirectUris":["https://calendar.fineko.space/auth/callback"]}` → `clientId`, `clientSecret` у `.env` календаря.
-2. Задеплоїти SSO з новим рядком у реєстрі продуктів (`src/index.ts`, `key:'calendar'`, коміт у репо SSO): `git pull && pm2 restart sso`. У `.env` SSO можна задати `CALENDAR_URL=http://127.0.0.1:4800` (каталог проєктів/сторінок краще брати локально).
+2. Задеплоїти SSO з новим рядком у реєстрі продуктів (`src/index.ts`, `key:'calendar'`, коміт у репо SSO): `git pull && pm2 restart sso`. У `.env` SSO можна задати `CALENDAR_URL=http://127.0.0.1:4850` (каталог проєктів/сторінок краще брати локально).
 3. У панелі доступів SSO видати собі роль **superadmin** у продукті «Календар» (далі людям компаній: роль user + проєкт = компанія).
 
 ## 4. Перевірка

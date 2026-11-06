@@ -15,5 +15,5 @@ npm run build:admin
 pm2 startOrReload ecosystem.config.js --env production
 pm2 save
 sleep 2
-curl -fsS http://127.0.0.1:4800/health && echo
+curl -fsS http://127.0.0.1:4850/health && echo
 echo "== Готово. pm2 logs calendar-api --lines 20 =="
